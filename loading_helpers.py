@@ -4,6 +4,7 @@ import os
 import numpy as np
 import random
 
+from pdb import set_trace as st
 
 import json
 def load_json(filename):
@@ -38,7 +39,12 @@ def modify_descriptor(descriptor, apply_changes):
 def load_gpt_descriptions(hparams, classes_to_load=None):
     gpt_descriptions_unordered = load_json(hparams['descriptor_fname'])
     unmodify_dict = {}
+
+    st()
     
+    '''
+    UCB - classes_to_load - None,  hparams['category_name_inclusion'] - 'preprend'
+    '''
     
     if classes_to_load is not None: 
         gpt_descriptions = {c: gpt_descriptions_unordered[c] for c in classes_to_load}
@@ -72,6 +78,9 @@ def load_gpt_descriptions(hparams, classes_to_load=None):
             # print an example the first time
             if i == 0: #verbose and 
                 print(f"\nExample description for class {k}: \"{gpt_descriptions[k][0]}\"\n")
+    
+    st()
+
     return gpt_descriptions, unmodify_dict
 
 

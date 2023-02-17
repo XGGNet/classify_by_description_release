@@ -1,11 +1,20 @@
 from load import *
 import torchmetrics
 from tqdm import tqdm
+from pdb import set_trace as st
 
 
 seed_everything(hparams['seed'])
 
 bs = hparams['batch_size']
+
+# st()
+'''
+5794
+dataset[0] 
+(image [3,224,224], label 185)
+'''
+
 dataloader = DataLoader(dataset, bs, shuffle=True, num_workers=16, pin_memory=True)
 
 print("Loading model...")

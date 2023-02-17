@@ -75,7 +75,9 @@ hparams['descriptor_fname'] = None
 
 IMAGENET_DIR = '/proj/vondrick3/datasets/ImageNet/' # REPLACE THIS WITH YOUR OWN PATH
 IMAGENETV2_DIR = '/proj/vondrick/datasets/ImageNetV2/' # REPLACE THIS WITH YOUR OWN PATH
-CUB_DIR = '/proj/vondrick/datasets/Birds-200-2011/' # REPLACE THIS WITH YOUR OWN PATH
+# CUB_DIR = '/proj/vondrick/datasets/Birds-200-2011/' # REPLACE THIS WITH YOUR OWN PATH
+CUB_DIR = '/home/lichenxin/data/CUB_200_2011/' # REPLACE THIS WITH YOUR OWN PATH
+
 
 # PyTorch datasets
 tfms = _transform(hparams['image_size'])
@@ -104,6 +106,7 @@ if hparams['dataset'] == 'imagenet':
 elif hparams['dataset'] == 'cub':
     # load CUB dataset
     hparams['data_dir'] = pathlib.Path(CUB_DIR)
+    # 这里只用到 test set
     dataset = CUBDataset(hparams['data_dir'], train=False, transform=tfms)
     classes_to_load = None #dataset.classes
     hparams['descriptor_fname'] = 'descriptors_cub'
