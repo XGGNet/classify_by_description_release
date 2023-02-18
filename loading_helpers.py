@@ -40,10 +40,11 @@ def load_gpt_descriptions(hparams, classes_to_load=None):
     gpt_descriptions_unordered = load_json(hparams['descriptor_fname'])
     unmodify_dict = {}
 
-    st()
+    # st()
     
     '''
     UCB - classes_to_load - None,  hparams['category_name_inclusion'] - 'preprend'
+    hparams['apply_descriptor_modification'] - True
     '''
     
     if classes_to_load is not None: 
@@ -65,10 +66,15 @@ def load_gpt_descriptions(hparams, classes_to_load=None):
             word_to_add = wordify(k)
             
             if (hparams['category_name_inclusion'] == 'append'):
+
                 build_descriptor_string = lambda item: f"{modify_descriptor(item, hparams['apply_descriptor_modification'])}{hparams['between_text']}{word_to_add}"
+
             elif (hparams['category_name_inclusion'] == 'prepend'):
+
                 build_descriptor_string = lambda item: f"{hparams['before_text']}{word_to_add}{hparams['between_text']}{modify_descriptor(item, hparams['apply_descriptor_modification'])}{hparams['after_text']}"
+
             else:
+
                 build_descriptor_string = lambda item: modify_descriptor(item, hparams['apply_descriptor_modification'])
             
             unmodify_dict[k] = {build_descriptor_string(item): item for item in v}
@@ -79,7 +85,7 @@ def load_gpt_descriptions(hparams, classes_to_load=None):
             if i == 0: #verbose and 
                 print(f"\nExample description for class {k}: \"{gpt_descriptions[k][0]}\"\n")
     
-    st()
+    # st()
 
     return gpt_descriptions, unmodify_dict
 

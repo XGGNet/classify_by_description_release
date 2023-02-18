@@ -27,8 +27,10 @@ model.requires_grad_(False)
 
 print("Encoding descriptions...")
 
+# 得到 description的 text feature
 description_encodings = compute_description_encodings(model)
 
+# 得到标准prompt的 text feature
 label_encodings = compute_label_encodings(model)
 
 
@@ -47,10 +49,13 @@ for batch_number, batch in enumerate(tqdm(dataloader)):
     
     image_encodings = model.encode_image(images)
     image_encodings = F.normalize(image_encodings)
+
+    '''
+    计算CLIP_std_prompt的指标结果
+    '''
     
     image_labels_similarity = image_encodings @ label_encodings.T
     clip_predictions = image_labels_similarity.argmax(dim=1)
-    
     
     clip_acc = clip_accuracy_metric(image_labels_similarity, labels)
     clip_acc_top5 = clip_accuracy_metric_top5(image_labels_similarity, labels)
@@ -60,12 +65,14 @@ for batch_number, batch in enumerate(tqdm(dataloader)):
     image_description_similarity_cumulative = [None]*n_classes
     
     for i, (k, v) in enumerate(description_encodings.items()): # You can also vectorize this; it wasn't much faster for me
+    '''
+    k - class, v - description
+    '''
         
-        
-        dot_product_matrix = image_encodings @ v.T
+        dot_product_matrix = image_encodings @ v.T # 这是一个矩阵
         
         image_description_similarity[i] = dot_product_matrix
-        image_description_similarity_cumulative[i] = aggregate_similarity(image_description_similarity[i])
+        image_description_similarity_cumulative[i] = aggregate_similarity(image_description_similarity[i]) #这里是取均值
         
         
     # create tensor of similarity means
