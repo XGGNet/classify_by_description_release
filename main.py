@@ -35,11 +35,14 @@ label_encodings = compute_label_encodings(model)
 
 
 print("Evaluating...")
-lang_accuracy_metric = torchmetrics.Accuracy().to(device)
-lang_accuracy_metric_top5 = torchmetrics.Accuracy(top_k=5).to(device)
+# class_set = [dataset[i][1] for i in range(len(dataset))]
+# num_classes = max(class_set)
 
-clip_accuracy_metric = torchmetrics.Accuracy().to(device)
-clip_accuracy_metric_top5 = torchmetrics.Accuracy(top_k=5).to(device)
+lang_accuracy_metric = torchmetrics.Accuracy(task="multiclass", num_classes=n_classes).to(device)
+lang_accuracy_metric_top5 = torchmetrics.Accuracy(task="multiclass",num_classes=n_classes, top_k=5).to(device)
+
+clip_accuracy_metric = torchmetrics.Accuracy(task="multiclass", num_classes=n_classes).to(device)
+clip_accuracy_metric_top5 = torchmetrics.Accuracy(task="multiclass", num_classes=n_classes,top_k=5).to(device)
 
 for batch_number, batch in enumerate(tqdm(dataloader)):
     images, labels = batch
@@ -65,10 +68,8 @@ for batch_number, batch in enumerate(tqdm(dataloader)):
     image_description_similarity_cumulative = [None]*n_classes
     
     for i, (k, v) in enumerate(description_encodings.items()): # You can also vectorize this; it wasn't much faster for me
-    '''
-    k - class, v - description
-    '''
-        
+    ## k - class, v - description
+
         dot_product_matrix = image_encodings @ v.T # 这是一个矩阵
         
         image_description_similarity[i] = dot_product_matrix

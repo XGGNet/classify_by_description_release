@@ -16,11 +16,15 @@ import clip
 
 from loading_helpers import *
 
+from pdb import set_trace as st
+
 
 hparams = {}
 # hyperparameters
 
-hparams['model_size'] = "ViT-B/32" 
+# hparams['model_size'] = "ViT-B/32" 
+hparams['model_size'] = "RN50" 
+
 # Options:
 # ['RN50',
 #  'RN101',
@@ -78,6 +82,8 @@ IMAGENETV2_DIR = '/proj/vondrick/datasets/ImageNetV2/' # REPLACE THIS WITH YOUR 
 # CUB_DIR = '/proj/vondrick/datasets/Birds-200-2011/' # REPLACE THIS WITH YOUR OWN PATH
 CUB_DIR = '/home/lichenxin/data/CUB_200_2011/' # REPLACE THIS WITH YOUR OWN PATH
 
+PACS_DIR = '/home/lichenxin/code/Source-Free-Domain-Generalization/data/PACS/'
+
 
 # PyTorch datasets
 tfms = _transform(hparams['image_size'])
@@ -108,8 +114,15 @@ elif hparams['dataset'] == 'cub':
     hparams['data_dir'] = pathlib.Path(CUB_DIR)
     # 这里只用到 test set
     dataset = CUBDataset(hparams['data_dir'], train=False, transform=tfms)
+
+    st()
+    
     classes_to_load = None #dataset.classes
     hparams['descriptor_fname'] = 'descriptors_cub'
+
+# elif hparams['dataset'] == 'pacs':
+#     hparams['data_dir'] = pathlib.Path(PACS_DIR)
+#     dataset = 
 
 
 hparams['descriptor_fname'] = './descriptors/' + hparams['descriptor_fname']
