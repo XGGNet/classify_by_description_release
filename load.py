@@ -22,8 +22,8 @@ from pdb import set_trace as st
 hparams = {}
 # hyperparameters
 
-# hparams['model_size'] = "ViT-B/32" 
-hparams['model_size'] = "RN50" 
+hparams['model_size'] = "ViT-L/14@336px" 
+# hparams['model_size'] = "RN50" 
 
 # Options:
 # ['RN50',
@@ -35,7 +35,10 @@ hparams['model_size'] = "RN50"
 #  'ViT-B/16',
 #  'ViT-L/14',
 #  'ViT-L/14@336px']
+
+# hparams['dataset'] = 'cub'
 hparams['dataset'] = 'cub'
+
 
 hparams['batch_size'] = 64*10
 hparams['device'] = "cuda" if torch.cuda.is_available() else "cpu"
@@ -115,10 +118,10 @@ elif hparams['dataset'] == 'cub':
     # 这里只用到 test set
     dataset = CUBDataset(hparams['data_dir'], train=False, transform=tfms)
 
-    st()
+    # st()
     
     classes_to_load = None #dataset.classes
-    hparams['descriptor_fname'] = 'descriptors_cub'
+    hparams['descriptor_fname'] = 'descriptors_cub_rank'
 
 # elif hparams['dataset'] == 'pacs':
 #     hparams['data_dir'] = pathlib.Path(PACS_DIR)
@@ -148,10 +151,35 @@ def compute_label_encodings(model):
     return label_encodings
 
 
-def aggregate_similarity(similarity_matrix_chunk, aggregation_method='mean'):
+# def aggregate_similarity(similarity_matrix_chunk, aggregation_method='mean'):
+#     if aggregation_method == 'max': return similarity_matrix_chunk.max(dim=1)[0]
+#     elif aggregation_method == 'sum': return similarity_matrix_chunk.sum(dim=1)
+#     elif aggregation_method == 'mean': return similarity_matrix_chunk.mean(dim=1)
+#     else: raise ValueError("Unknown aggregate_similarity")
+
+def aggregate_similarity(similarity_matrix_chunk, aggregation_method='mean', min=0.0, max=1.0):
+    # st()
+    # [640,7]
     if aggregation_method == 'max': return similarity_matrix_chunk.max(dim=1)[0]
     elif aggregation_method == 'sum': return similarity_matrix_chunk.sum(dim=1)
     elif aggregation_method == 'mean': return similarity_matrix_chunk.mean(dim=1)
+    elif aggregation_method == 'rank':
+        num_fac = similarity_matrix_chunk.shape[1]
+        max_fac = min
+        min_fac = max
+        
+        factor =  [max_fac -  (max_fac-min_fac)*i/(num_fac-1) for i in range(num_fac)]
+
+        # st()
+        
+        def multiple_similarity_matrix_chunk_and_factor(similarity_matrix_chunk, factor):
+            similarity_matrix_chunk = similarity_matrix_chunk * torch.tensor(factor).to(hparams['device'])
+            return similarity_matrix_chunk
+
+        result = multiple_similarity_matrix_chunk_and_factor(similarity_matrix_chunk, factor)
+        # st()
+        return result.mean(dim=1)
+    
     else: raise ValueError("Unknown aggregate_similarity")
 
 def show_from_indices(indices, images, labels=None, predictions=None, predictions2 = None, n=None, image_description_similarity=None, image_labels_similarity=None):

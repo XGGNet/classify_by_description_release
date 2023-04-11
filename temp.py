@@ -45,12 +45,9 @@ clip_accuracy_metric = torchmetrics.Accuracy().to(device)
 clip_accuracy_metric_top5 = torchmetrics.Accuracy(top_k=5).to(device)
 
 
-rank_accuracy_metrics = {}
-rank_accuracy_metrics_top5 = {}
 
-for ij in np.arange(0,1,0.1):
-    rank_accuracy_metrics[ij] = torchmetrics.Accuracy().to(device)
-    rank_accuracy_metrics_top5[ij] = torchmetrics.Accuracy(top_k=5).to(device)
+rank_accuracy_metric = torchmetrics.Accuracy().to(device)
+rank_accuracy_metric_top5 = torchmetrics.Accuracy(top_k=5).to(device)
 
 
 
@@ -78,10 +75,7 @@ for batch_number, batch in enumerate(tqdm(dataloader)):
 
     image_description_similarity_cumulative = [None]*n_classes
 
-    rank_image_description_similarity_cumulatives = {}
-
-    for ij in np.arange(0,1,0.1):
-        rank_image_description_similarity_cumulatives[ij] = [None]*n_classes
+    rank_image_description_similarity_cumulative = [None]*n_classes
 
     
     for i, (k, v) in enumerate(description_encodings.items()): # You can also vectorize this; it wasn't much faster for me
@@ -93,8 +87,8 @@ for batch_number, batch in enumerate(tqdm(dataloader)):
 
         image_description_similarity_cumulative[i] = aggregate_similarity(image_description_similarity[i]) #这里是取均值
 
-        for ij in np.arange(0,1,0.1):
-            rank_image_description_similarity_cumulatives[ij][i] = aggregate_similarity(image_description_similarity[i], aggregation_method='rank',min=ij, max=1) 
+
+        rank_image_description_similarity_cumulative[i] = aggregate_similarity(image_description_similarity[i], aggregation_method='rank',min=0.3, max=1) 
         
     # create tensor of similarity means
     cumulative_tensor = torch.stack(image_description_similarity_cumulative,dim=1)
@@ -106,10 +100,10 @@ for batch_number, batch in enumerate(tqdm(dataloader)):
     lang_acc = lang_accuracy_metric(cumulative_tensor.softmax(dim=-1), labels)
     lang_acc_top5 = lang_accuracy_metric_top5(cumulative_tensor.softmax(dim=-1), labels)
 
-    for ij in np.arange(0,1,0.1):
-        rank_cumulative_tensor =  torch.stack(rank_image_description_similarity_cumulatives[ij],dim=1)
-        _ = rank_accuracy_metrics[ij](rank_cumulative_tensor.softmax(dim=-1), labels)
-        _ = rank_accuracy_metrics_top5[ij](rank_cumulative_tensor.softmax(dim=-1), labels)
+
+    rank_cumulative_tensor =  torch.stack(rank_image_description_similarity_cumulative,dim=1)
+    _ = rank_accuracy_metric(rank_cumulative_tensor.softmax(dim=-1), labels)
+    _ = rank_accuracy_metric_top5(rank_cumulative_tensor.softmax(dim=-1), labels)
     
     
 
@@ -123,9 +117,9 @@ accuracy_logs["Total Description-based Top-5 Accuracy: "] = 100*lang_accuracy_me
 accuracy_logs["Total CLIP-Standard Top-1 Accuracy: "] = 100*clip_accuracy_metric.compute().item()
 accuracy_logs["Total CLIP-Standard Top-5 Accuracy: "] = 100*clip_accuracy_metric_top5.compute().item()
 
-for ij in np.arange(0,1,0.1):
-    accuracy_logs[f"Total Rank Description-based Top-1 Accuracy by [{ij}~1]: "] = 100*rank_accuracy_metrics[ij].compute().item()
-    accuracy_logs[f"Total Rank Description-based Top-5 Accuracy by [{ij}~1]: "] = 100*rank_accuracy_metrics_top5[ij].compute().item()
+
+accuracy_logs[f"Total Rank Description-based Top-1 Accuracy: "] = 100*rank_accuracy_metric.compute().item()
+accuracy_logs[f"Total Rank Description-based Top-5 Accuracy: "] = 100*rank_accuracy_metric_top5.compute().item()
 
 
 # print the dictionary
